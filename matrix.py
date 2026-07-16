@@ -39,6 +39,11 @@ DEFAULT = {
         {"host": "192.168.1.50", "leds": 300, "offset": 0},
         {"host": "192.168.1.51", "leds": 300, "offset": 300},
     ],
+    # 2-D serpentine canvas (WLED-native matrix wiring). width 0 = plain 1-D mode (default).
+    # When width/height are set, posfn "column" lights a whole vertical column per note; the
+    # canvas stays a linear buffer in PHYSICAL LED order, so the transport is unchanged and WLED
+    # needs no 2-D config — the router owns the geometry.
+    "matrix": {"width": 0, "height": 0, "serpentine": True},
     "transport": "ddp",                      # unified transport: "ddp" | "artnet" | "e131"
     "ddp_port": 4048,
     "artnet_port": 6454,
@@ -53,6 +58,7 @@ DEFAULT = {
         "color": [0, 255, 128],
         "hand_colors": {},                   # channel -> colour (Synthesia L/R): {"1":[0,120,255],"2":[0,255,120]}
         "velocity_to_bri": True,
+        # posfn "column" needs the matrix geometry below; interpolate/keymap/direct stay 1-D.
         "fade_ms": 250,
     },
     # mirror = wled-midi lamp looks broadcast to every device
@@ -182,9 +188,34 @@ class Matrix:
         self.seq = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    def _serp_index(self, x, y):
+        """Logical matrix (x,y) -> physical LED index, honouring serpentine wiring (odd rows
+        run right-to-left). Returns None if (x,y) is outside the configured matrix."""
+        m = self.cfg.get("matrix", {})
+        W = int(m.get("width", 0)); H = int(m.get("height", 0))
+        if W <= 0 or H <= 0 or not (0 <= x < W and 0 <= y < H):
+            return None
+        col = (W - 1 - x) if (m.get("serpentine", True) and y % 2 == 1) else x
+        return y * W + col
+
     # --- shared: note pitch -> LED position(s) on the FULL canvas ---
     def _leds(self, note):
         s = self.cfg["strip"]; N = self.total; fn = s.get("posfn", "interpolate")
+        if fn == "column":                             # 2-D: note pitch -> X, light the whole column
+            m = self.cfg.get("matrix", {})
+            W = int(m.get("width", 0)); H = int(m.get("height", 0))
+            if W <= 0 or H <= 0:
+                return []
+            lo = int(s.get("lo", 21)); hi = int(s.get("hi", 108))
+            if hi <= lo:
+                return []
+            x = round((note - lo) / (hi - lo) * (W - 1))
+            out = []
+            for y in range(H):                         # every row at column x, serpentine-mapped
+                i = self._serp_index(x, y)
+                if i is not None and 0 <= i < N:
+                    out.append(i)
+            return out
         if fn == "direct":
             i = note - int(s.get("firstnote", 0)); return [i] if 0 <= i < N else []
         if fn == "keymap":                             # LEDs-per-key — prior art: onlaj/Piano-LED-Visualizer (no affiliation)

@@ -45,6 +45,14 @@ each frame, every device gets its canvas slice as DDP packets — header
 RGB payload, chunked at 480 px (1440 B) per packet, to UDP 4048. The canvas send is skipped when
 nothing changed (idle = no traffic); fades keep sending until pixels reach black.
 
+## 2-D matrix (serpentine)
+
+Set `"matrix": {"width": W, "height": H, "serpentine": true}` and `"posfn": "column"` — a note's
+pitch maps to a column **X** and lights the whole vertical column, addressed through the physical
+**serpentine** wiring (odd rows run right-to-left). The canvas stays a linear buffer in physical LED
+order, so DDP/Art-Net/E1.31 and WLED need no 2-D config — the router owns the geometry. The 1-D
+position functions (interpolate / keymap / direct) keep working and sweep the linear path.
+
 ## Status
 
 **Untested against real WLED hardware** (rig offline). The DDP framing + chunking + per-device canvas
