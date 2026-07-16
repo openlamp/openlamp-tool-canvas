@@ -47,6 +47,7 @@ DEFAULT = {
         "lo": 21, "hi": 108,                 # interpolate: note range across the full canvas
         "lpk": 2.0, "firstnote": 21,         # keymap/direct calibration
         "color": [0, 255, 128],
+        "hand_colors": {},                   # channel -> colour (Synthesia L/R): {"1":[0,120,255],"2":[0,255,120]}
         "velocity_to_bri": True,
         "fade_ms": 250,
     },
@@ -119,10 +120,10 @@ class Matrix:
         self.canvas[led * 3:led * 3 + 3] = bytes(rgb)
 
     # --- unified mode ---
-    def unified_note_on(self, note, vel):
+    def unified_note_on(self, note, vel, chan=1):
         s = self.cfg["strip"]; leds = self._leds(note)
         if not leds: return
-        r, g, b = s.get("color", [0, 255, 128])
+        r, g, b = s.get("hand_colors", {}).get(str(chan)) or s.get("color", [0, 255, 128])
         if s.get("velocity_to_bri", True):
             k = vel / 127.0; r, g, b = round(r * k), round(g * k), round(b * k)
         with self.lock:
@@ -206,9 +207,9 @@ class Matrix:
     def dispatch(self, msg):
         if self.cfg.get("mode") == "mirror":
             self.mirror_dispatch(msg); return
-        typ = msg[0] & 0xF0                            # unified
+        typ, chan = msg[0] & 0xF0, (msg[0] & 0x0F) + 1  # unified
         if typ == 0x90 and msg[2] > 0:
-            self.unified_note_on(msg[1], msg[2])
+            self.unified_note_on(msg[1], msg[2], chan)
         elif typ == 0x80 or (typ == 0x90 and msg[2] == 0):
             self.unified_note_off(msg[1])
 
