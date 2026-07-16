@@ -39,9 +39,11 @@ DEFAULT = {
         {"host": "192.168.1.50", "leds": 300, "offset": 0},
         {"host": "192.168.1.51", "leds": 300, "offset": 300},
     ],
-    "transport": "ddp",                      # unified transport: "ddp" | "artnet"
+    "transport": "ddp",                      # unified transport: "ddp" | "artnet" | "e131"
     "ddp_port": 4048,
     "artnet_port": 6454,
+    "e131_port": 5568,
+    "e131_priority": 100,
     "fps": 40,                               # unified: canvas send rate
     # unified painting = wled-midi strip semantics over the WHOLE canvas
     "strip": {
@@ -118,6 +120,52 @@ def artnet_packets(pixels, seq, universe_base=0):
         yield header + data
         off += ARTNET_MAX_CH
         uni += 1
+        if not data:
+            break
+
+
+# ----- E1.31 / sACN transport (unified mode; WLED-native, DMX-over-IP) -----
+
+E131_PORT = 5568
+E131_ACN_ID = bytes([0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0, 0, 0])  # "ASC-E1.17\0\0\0"
+E131_CID = bytes(range(1, 17))                       # fixed 16-byte source CID (stable per sender)
+E131_MAX_CH = 510                                    # 170 RGB pixels (510 <= 512 DMX slots)
+
+
+def e131_packets(pixels, seq, universe, cid=E131_CID, source="OpenLamp Matrix", priority=100):
+    """Yield E1.31 (sACN) data packets for one device's pixels, one universe per 170 px.
+    Layout per ANSI E1.31: Root (ACN id, vector 4, CID) + Framing (vector 2, source, priority,
+    seq, universe) + DMP (vector 2, addr-type 0xA1, start code 0 + DMX data). Flags = 0x7 in the
+    top nibble of each 16-bit flags/length field."""
+    total = len(pixels)
+    off = 0
+    while off < total or (off == 0 and total == 0):
+        data = pixels[off:off + E131_MAX_CH]
+        dlen = len(data)
+        plen = 126 + dlen                            # total packet length (byte 125 = start code)
+        pkt = bytearray(plen)
+        struct.pack_into(">H", pkt, 0, 0x0010)       # preamble size (postamble stays 0)
+        pkt[4:16] = E131_ACN_ID
+        struct.pack_into(">H", pkt, 16, 0x7000 | (plen - 16))     # root flags & length
+        struct.pack_into(">I", pkt, 18, 4)                        # VECTOR_ROOT_E131_DATA
+        pkt[22:38] = cid
+        struct.pack_into(">H", pkt, 38, 0x7000 | (plen - 38))     # framing flags & length
+        struct.pack_into(">I", pkt, 40, 2)                        # VECTOR_E131_DATA_PACKET
+        sn = source.encode()[:63]; pkt[44:44 + len(sn)] = sn      # source name (64 B, null-padded)
+        pkt[108] = priority & 0xFF                                # priority (0-200, default 100)
+        pkt[111] = seq & 0xFF                                     # sequence number
+        struct.pack_into(">H", pkt, 113, universe)               # universe (1-63999)
+        struct.pack_into(">H", pkt, 115, 0x7000 | (plen - 115))  # DMP flags & length
+        pkt[117] = 2                                             # VECTOR_DMP_SET_PROPERTY
+        pkt[118] = 0xA1                                          # address type & data type
+        struct.pack_into(">H", pkt, 119, 0)                     # first property address
+        struct.pack_into(">H", pkt, 121, 1)                     # address increment
+        struct.pack_into(">H", pkt, 123, dlen + 1)              # property value count (start code + data)
+        pkt[125] = 0                                            # DMX512 start code
+        pkt[126:126 + dlen] = data
+        yield bytes(pkt)
+        off += E131_MAX_CH
+        universe += 1
         if not data:
             break
 
@@ -210,6 +258,11 @@ class Matrix:
             if transport == "artnet":
                 port = self.cfg.get("artnet_port", ARTNET_PORT)
                 for pkt in artnet_packets(slice_, self.seq, d.get("universe", 0)):
+                    self.sock.sendto(pkt, (d["host"], port))
+            elif transport in ("e131", "e1.31", "sacn"):
+                port = self.cfg.get("e131_port", E131_PORT)
+                prio = self.cfg.get("e131_priority", 100)
+                for pkt in e131_packets(slice_, self.seq, d.get("universe", 1), priority=prio):
                     self.sock.sendto(pkt, (d["host"], port))
             else:                                          # ddp (default)
                 port = self.cfg.get("ddp_port", 4048)

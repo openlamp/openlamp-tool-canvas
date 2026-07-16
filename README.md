@@ -13,9 +13,9 @@ virtual MIDI port; this router fans out to every device. Runs on a Raspberry Pi.
 - **`unified`** — the devices form **one pixel canvas** (concatenated left→right by `offset`). MIDI
   paints **positions** on the global canvas (strip semantics: interpolate / keymap / direct, with
   velocity→brightness, note-off fade and channel→hand colour), and each device is streamed **only its
-  slice** via a WLED realtime transport — **`ddp`** (UDP 4048, default) or **`artnet`** (ArtDmx, UDP
-  6454, 170 px/universe; set `"universe"` per device) — no HTTP rate cap. *"A note sweeps a light
-  across the whole club."* Pick via `"transport": "ddp" | "artnet"`.
+  slice** via a WLED realtime transport — **`ddp`** (UDP 4048, default), **`artnet`** (ArtDmx, UDP
+  6454), or **`e131`** (sACN, UDP 5568) — all 170 px/universe, set `"universe"` per device — no HTTP
+  rate cap. *"A note sweeps a light across the whole club."* Pick via `"transport": "ddp" | "artnet" | "e131"`.
 
 ## Setup
 
