@@ -107,7 +107,7 @@ class Matrix:
         s = self.cfg["strip"]; N = self.total; fn = s.get("posfn", "interpolate")
         if fn == "direct":
             i = note - int(s.get("firstnote", 0)); return [i] if 0 <= i < N else []
-        if fn == "keymap":
+        if fn == "keymap":                             # LEDs-per-key, per onlaj/Piano-LED-Visualizer
             lpk = float(s.get("lpk", 2.0)); first = int(s.get("firstnote", 21))
             c = round((note - first) * lpk); span = max(1, round(lpk))
             return [i for i in range(c, c + span) if 0 <= i < N]
