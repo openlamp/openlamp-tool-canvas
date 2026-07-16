@@ -39,7 +39,9 @@ DEFAULT = {
         {"host": "192.168.1.50", "leds": 300, "offset": 0},
         {"host": "192.168.1.51", "leds": 300, "offset": 300},
     ],
+    "transport": "ddp",                      # unified transport: "ddp" | "artnet"
     "ddp_port": 4048,
+    "artnet_port": 6454,
     "fps": 40,                               # unified: canvas send rate
     # unified painting = wled-midi strip semantics over the WHOLE canvas
     "strip": {
@@ -88,6 +90,35 @@ def ddp_packets(pixels, seq, dst_id=1):
         yield header + chunk
         off += len(chunk)
         if not chunk:
+            break
+
+
+# ----- Art-Net transport (unified mode; WLED-native alternative to DDP) -----
+
+ARTNET_PORT = 6454
+ARTNET_MAX_CH = 510                                 # 170 RGB pixels per universe (510 <= 512, even)
+
+
+def artnet_packets(pixels, seq, universe_base=0):
+    """Yield ArtDmx (OpOutput) packets for one device's pixel bytes, one universe per 170 px.
+    Header per Art-Net 4: 'Art-Net\\0', OpCode 0x5000 (LE), ProtVer 14 (BE), seq, physical,
+    SubUni + Net (15-bit universe), Length (BE), then DMX data."""
+    total = len(pixels)
+    off, uni = 0, universe_base
+    while off < total or (off == 0 and total == 0):
+        data = pixels[off:off + ARTNET_MAX_CH]
+        if len(data) % 2:                            # DMX length must be even
+            data = data + b"\x00"
+        header = (b"Art-Net\x00"
+                  + struct.pack("<H", 0x5000)        # OpDmx, little-endian
+                  + struct.pack(">H", 14)            # protocol version 14, big-endian
+                  + bytes([seq & 0xFF, 0])           # sequence, physical
+                  + bytes([uni & 0xFF, (uni >> 8) & 0x7F])   # SubUni (low), Net (high 7 bits)
+                  + struct.pack(">H", len(data)))    # data length, big-endian
+        yield header + data
+        off += ARTNET_MAX_CH
+        uni += 1
+        if not data:
             break
 
 
@@ -172,11 +203,18 @@ class Matrix:
             self.dirty = False
             snapshot = bytes(self.canvas)
         self.seq += 1
+        transport = self.cfg.get("transport", "ddp")
         for d in self.cfg["devices"]:
             o = d["offset"] * 3
             slice_ = snapshot[o:o + d["leds"] * 3]
-            for pkt in ddp_packets(slice_, self.seq):
-                self.sock.sendto(pkt, (d["host"], self.cfg.get("ddp_port", 4048)))
+            if transport == "artnet":
+                port = self.cfg.get("artnet_port", ARTNET_PORT)
+                for pkt in artnet_packets(slice_, self.seq, d.get("universe", 0)):
+                    self.sock.sendto(pkt, (d["host"], port))
+            else:                                          # ddp (default)
+                port = self.cfg.get("ddp_port", 4048)
+                for pkt in ddp_packets(slice_, self.seq):
+                    self.sock.sendto(pkt, (d["host"], port))
 
     # --- mirror mode ---
     def mirror_dispatch(self, msg):
