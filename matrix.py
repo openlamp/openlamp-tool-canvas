@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """OpenLamp Matrix — compose N WLED devices into one canvas, driven from MIDI.
 
-Part of the wled-midi convention (github.com/openlamp/openlamp-spec-midi). Solves the club / large-rig
+Part of the OpenLamp MIDI convention (github.com/openlamp/openlamp-spec-midi). Solves the club / large-rig
 ask: many WLED instances that should behave as one surface. Two modes:
 
-  - "mirror"  — the SAME wled-midi look/state is applied to EVERY device (broadcast). Uses each
+  - "mirror"  — the SAME OpenLamp MIDI look/state is applied to EVERY device (broadcast). Uses each
                 device's HTTP JSON API (POST /json/state). Event-driven; low rate. Good for
                 "all strips flash red on the beat".
 
@@ -50,7 +50,7 @@ DEFAULT = {
     "e131_port": 5568,
     "e131_priority": 100,
     "fps": 40,                               # unified: canvas send rate
-    # unified painting = wled-midi strip semantics over the WHOLE canvas
+    # unified painting = OpenLamp MIDI strip semantics over the WHOLE canvas
     "strip": {
         "posfn": "interpolate",              # "interpolate" | "keymap" | "direct"
         "lo": 21, "hi": 108,                 # interpolate: note range across the full canvas
@@ -61,7 +61,7 @@ DEFAULT = {
         # posfn "column" needs the matrix geometry below; interpolate/keymap/direct stay 1-D.
         "fade_ms": 250,
     },
-    # mirror = wled-midi lamp looks broadcast to every device
+    # mirror = OpenLamp MIDI lamp looks broadcast to every device
     "looks": {
         "59": [0, 0, 0], "60": [255, 0, 0], "61": [255, 85, 0], "62": [255, 200, 0],
         "63": [0, 255, 0], "64": [0, 200, 255], "65": [0, 0, 255], "66": [255, 0, 170],

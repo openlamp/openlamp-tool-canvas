@@ -1,11 +1,11 @@
 # CLAUDE.md — openlamp/matrix
 
 A MIDI-driven router that composes **N WLED devices into one canvas**. Part of the
-[wled-midi](https://github.com/openlamp/openlamp-spec-midi) convention. Single file: `matrix.py`.
+[OpenLamp MIDI](https://github.com/openlamp/openlamp-spec-midi) convention. Single file: `matrix.py`.
 
 ## Two modes, two transports
 
-- **mirror** → same wled-midi state to every device via **HTTP** `POST /json/state` (event-driven).
+- **mirror** → same OpenLamp MIDI state to every device via **HTTP** `POST /json/state` (event-driven).
 - **unified** → one pixel canvas; MIDI strip-paints positions; each device streamed its slice via
   **DDP** (UDP 4048) at `fps`. The canvas send is skipped when unchanged (idle = silent); fades
   keep it going until black.
@@ -29,6 +29,6 @@ wrong byte fails silently on the wire. Say so in any status claim; verify before
 
 ## Position math
 
-Reuses wled-midi strip semantics over the FULL canvas: `interpolate` (note range → whole canvas),
-`keymap` (LEDs-per-key), `direct` (note = index). Keep it identical to the engine / wled-midi-web
+Reuses OpenLamp MIDI strip semantics over the FULL canvas: `interpolate` (note range → whole canvas),
+`keymap` (LEDs-per-key), `direct` (note = index). Keep it identical to the engine / openlamp-demo-web
 `strip` implementations so a note lands on the same relative position everywhere.
