@@ -3,14 +3,14 @@
 # OpenLamp Canvas
 
 > Compose **N WLED devices into one canvas**, driven from MIDI — the
-> [wled-midi](https://github.com/openlamp/openlamp-spec-midi) answer to the club / large-rig use case.
+> [OpenLamp MIDI](https://github.com/openlamp/openlamp-spec-midi) answer to the club / large-rig use case.
 
 Many WLED instances that should behave as one surface. Point your DAW or controller at one
 virtual MIDI port; this router fans out to every device. Runs on a Raspberry Pi.
 
 ## Two modes
 
-- **`mirror`** — the **same** wled-midi look/state hits **every** device (broadcast), via each one's
+- **`mirror`** — the **same** OpenLamp MIDI look/state hits **every** device (broadcast), via each one's
   HTTP JSON API (`POST /json/state`). Event-driven, low rate. *"All strips flash red on the beat."*
 - **`unified`** — the devices form **one pixel canvas** (concatenated left→right by `offset`). MIDI
   paints **positions** on the global canvas (strip semantics: interpolate / keymap / direct, with
@@ -68,4 +68,4 @@ DDP framing modelled on the [LedFx](https://github.com/LedFx/LedFx) reference. M
 
 ---
 
-**Two open standards, one bridge.** This implements the open [**wled-midi**](https://github.com/openlamp/openlamp-spec-midi) convention — the agreed dictionary between [**MIDI**](https://midi.org) (the MIDI Association) and [**WLED**](https://kno.wled.ge). Free for anyone to build on: see the convention's [openness & patent policy](https://github.com/openlamp/openlamp-spec-midi/blob/main/SPEC.md) (§14) and the [licensing note](https://github.com/openlamp/openlamp-spec-midi/blob/main/docs/licensing.md). Part of [OpenLamp](https://github.com/openlamp).
+**Two open standards, one bridge.** This implements the open [**OpenLamp MIDI**](https://github.com/openlamp/openlamp-spec-midi) convention — the agreed dictionary between [**MIDI**](https://midi.org) (the MIDI Association) and [**WLED**](https://kno.wled.ge). Free for anyone to build on: see the convention's [openness & patent policy](https://github.com/openlamp/openlamp-spec-midi/blob/main/SPEC.md) (§14) and the [licensing note](https://github.com/openlamp/openlamp-spec-midi/blob/main/docs/licensing.md). Part of [OpenLamp](https://github.com/openlamp).
