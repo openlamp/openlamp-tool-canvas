@@ -1,4 +1,6 @@
-# openlamp/matrix
+<p align="center"><img src="assets/banner.svg" alt="OpenLamp Canvas" width="100%"></p>
+
+# OpenLamp Canvas
 
 > Compose **N WLED devices into one canvas**, driven from MIDI — the
 > [wled-midi](https://github.com/openlamp/openlamp-spec-midi) answer to the club / large-rig use case.
@@ -61,7 +63,7 @@ device before a show — a wrong byte fails silently on the wire.
 
 ## Credits
 
-Part of [OpenLamp](https://github.com/openlamp) / [wled-midi](https://github.com/openlamp/openlamp-spec-midi).
+Part of [OpenLamp](https://github.com/openlamp) / [openlamp-spec-midi](https://github.com/openlamp/openlamp-spec-midi).
 DDP framing modelled on the [LedFx](https://github.com/LedFx/LedFx) reference. MIT licensed.
 
 ---
