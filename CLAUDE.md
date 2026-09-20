@@ -1,7 +1,7 @@
 # CLAUDE.md — openlamp/matrix
 
 A MIDI-driven router that composes **N WLED devices into one canvas**. Part of the
-[wled-midi](https://github.com/openlamp/wled-midi) convention. Single file: `matrix.py`.
+[wled-midi](https://github.com/openlamp/openlamp-spec-midi) convention. Single file: `matrix.py`.
 
 ## Two modes, two transports
 

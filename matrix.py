@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """OpenLamp Matrix — compose N WLED devices into one canvas, driven from MIDI.
 
-Part of the wled-midi convention (github.com/openlamp/wled-midi). Solves the club / large-rig
+Part of the wled-midi convention (github.com/openlamp/openlamp-spec-midi). Solves the club / large-rig
 ask: many WLED instances that should behave as one surface. Two modes:
 
   - "mirror"  — the SAME wled-midi look/state is applied to EVERY device (broadcast). Uses each

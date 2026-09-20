@@ -1,7 +1,7 @@
 # openlamp/matrix
 
 > Compose **N WLED devices into one canvas**, driven from MIDI — the
-> [wled-midi](https://github.com/openlamp/wled-midi) answer to the club / large-rig use case.
+> [wled-midi](https://github.com/openlamp/openlamp-spec-midi) answer to the club / large-rig use case.
 
 Many WLED instances that should behave as one surface. Point your DAW or controller at one
 virtual MIDI port; this router fans out to every device. Runs on a Raspberry Pi.
@@ -61,9 +61,9 @@ device before a show — a wrong byte fails silently on the wire.
 
 ## Credits
 
-Part of [OpenLamp](https://github.com/openlamp) / [wled-midi](https://github.com/openlamp/wled-midi).
+Part of [OpenLamp](https://github.com/openlamp) / [wled-midi](https://github.com/openlamp/openlamp-spec-midi).
 DDP framing modelled on the [LedFx](https://github.com/LedFx/LedFx) reference. MIT licensed.
 
 ---
 
-**Two open standards, one bridge.** This implements the open [**wled-midi**](https://github.com/openlamp/wled-midi) convention — the agreed dictionary between [**MIDI**](https://midi.org) (the MIDI Association) and [**WLED**](https://kno.wled.ge). Free for anyone to build on: see the convention's [openness & patent policy](https://github.com/openlamp/wled-midi/blob/main/SPEC.md) (§14) and the [licensing note](https://github.com/openlamp/wled-midi/blob/main/docs/licensing.md). Part of [OpenLamp](https://github.com/openlamp).
+**Two open standards, one bridge.** This implements the open [**wled-midi**](https://github.com/openlamp/openlamp-spec-midi) convention — the agreed dictionary between [**MIDI**](https://midi.org) (the MIDI Association) and [**WLED**](https://kno.wled.ge). Free for anyone to build on: see the convention's [openness & patent policy](https://github.com/openlamp/openlamp-spec-midi/blob/main/SPEC.md) (§14) and the [licensing note](https://github.com/openlamp/openlamp-spec-midi/blob/main/docs/licensing.md). Part of [OpenLamp](https://github.com/openlamp).
